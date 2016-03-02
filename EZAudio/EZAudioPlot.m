@@ -280,6 +280,7 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
         {
 #if TARGET_OS_IPHONE
             translateY = CGRectGetHeight(rect);
+            NSLog(@"shouldCenterYAxis is NO with translateY :%f", translateY);
 #elif TARGET_OS_MAC
             translateY = 0.0f;
 #endif
@@ -287,6 +288,7 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
         else
         {
             translateY = halfHeight + rect.origin.y;
+            NSLog(@"shouldCenterYAxis is YES with translateY :%f", translateY);
         }
         xf = CGAffineTransformTranslate(xf, 0.0, translateY);
         double yScaleFactor = halfHeight;
@@ -294,6 +296,7 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
         {
             yScaleFactor = 2.0 * halfHeight;
         }
+        NSLog(@"deviceOriginFlipped :%d, yScaleFactor :%f", deviceOriginFlipped, yScaleFactor);
         xf = CGAffineTransformScale(xf, xscale, deviceOriginFlipped * yScaleFactor);
         CGPathAddLines(path, &xf, self.points, self.pointCount);
         if (self.shouldMirror)
@@ -321,14 +324,16 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
                         toHistoryInfo:self.historyInfo];
     
     // copy samples
+    
     switch (self.plotType)
     {
         case EZPlotTypeBuffer:
+            NSLog(@"Type Buffer");
             [self setSampleData:buffer
                          length:bufferSize];
             break;
         case EZPlotTypeRolling:
-            
+            NSLog(@"Type Rolling");
             [self setSampleData:self.historyInfo->buffer
                          length:self.historyInfo->bufferSize];
             break;
@@ -347,11 +352,13 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
 
 - (void)setSampleData:(float *)data length:(int)length
 {
+    //NSLog(@"points length: %d", length);
     CGPoint *points = self.points;
     for (int i = 0; i < length; i++)
     {
         points[i].x = i;
         points[i].y = data[i] * self.gain;
+        //NSLog(@"%f", points[i].y);
     }
     points[0].y = points[length - 1].y = 0.0f;
     self.pointCount = length;

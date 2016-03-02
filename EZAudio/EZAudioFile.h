@@ -365,6 +365,9 @@ typedef void (^EZAudioWaveformDataCompletionBlock)(float **waveformData, int len
  */
 - (void)getWaveformDataWithCompletionBlock:(EZAudioWaveformDataCompletionBlock)completion;
 
+- (void)getWaveformDataWithCompletionBlockResolution:(EZAudioWaveformDataCompletionBlock)completion
+                            reSampleRate:(UInt32)reSampleRate;
+
 //------------------------------------------------------------------------------
 
 /**

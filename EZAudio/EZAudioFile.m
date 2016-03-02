@@ -430,6 +430,7 @@ typedef struct
                             operation:"Failed to seek frame position within audio file"];
         
         // calculate the required number of frames per buffer
+        NSLog(@"totalClientFrames :%lld", self.totalClientFrames);
         SInt64 framesPerBuffer = ((SInt64) self.totalClientFrames / numberOfPoints);
         SInt64 framesPerChannel = framesPerBuffer / channels;
         
@@ -499,7 +500,20 @@ typedef struct
 
 - (void)getWaveformDataWithCompletionBlock:(EZAudioWaveformDataCompletionBlock)waveformDataCompletionBlock
 {
+    // This is function call of getWaveformDataWithNumberOfPoints, with two arguments
+    // First argument has name numberOfPoints and value EZAudioFileWaveformDefaultResolution
+    // Second argument has name completion and value waveformDataCompletionBlock
+    
     [self getWaveformDataWithNumberOfPoints:EZAudioFileWaveformDefaultResolution
+                                 completion:waveformDataCompletionBlock];
+}
+
+
+- (void)getWaveformDataWithCompletionBlockResolution:(EZAudioWaveformDataCompletionBlock)waveformDataCompletionBlock
+                        reSampleRate:(UInt32)reSampleRate
+{
+    UInt32 userResolution = floor(self.info->duration * reSampleRate);
+    [self getWaveformDataWithNumberOfPoints:userResolution
                                  completion:waveformDataCompletionBlock];
 }
 
@@ -515,9 +529,11 @@ typedef struct
 
     // async get waveform data
     __weak EZAudioFile *weakSelf = self;
+    NSLog(@"in getWaveformDataWithNumberOfPoints numberOfPoints %d", numberOfPoints);
     dispatch_async(self.waveformQueue, ^{
         EZAudioFloatData *waveformData = [weakSelf getWaveformDataWithNumberOfPoints:numberOfPoints];
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"waveformData.bufferSize: %d", waveformData.bufferSize);
             completion(waveformData.buffers, waveformData.bufferSize);
         });
     });
@@ -619,6 +635,7 @@ typedef struct
     AudioStreamBasicDescription clientFormat = self.info->clientFormat;
     AudioStreamBasicDescription fileFormat = self.info->fileFormat;
     BOOL sameSampleRate = clientFormat.mSampleRate == fileFormat.mSampleRate;
+    NSLog(@"clientFormat mSampleRate :%f, fileFormat :%f, duration :%f", clientFormat.mSampleRate, fileFormat.mSampleRate, self.info->duration);
     if (!sameSampleRate)
     {
         totalFrames = self.info->duration * clientFormat.mSampleRate;

@@ -110,16 +110,25 @@
     self.audioPlot.shouldFill = YES;
     self.audioPlot.shouldMirror = YES;
     
+    
+    int reSampleRate = 8000;
+    __block float **data;
+    
     //
     // Get the audio data from the audio file
     //
     __weak typeof (self) weakSelf = self;
-    [self.audioFile getWaveformDataWithCompletionBlock:^(float **waveformData,
+    [self.audioFile getWaveformDataWithCompletionBlockResolution:^(float **waveformData,
                                                          int length)
     {
         [weakSelf.audioPlot updateBuffer:waveformData[0]
                           withBufferSize:length];
-    }];
+        for (int i = 0; i < length; i++)
+            NSLog(@"%f",waveformData[0][i]);
+        
+        data = waveformData;
+        
+    } reSampleRate:reSampleRate];
 }
 
 @end
