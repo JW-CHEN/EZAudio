@@ -26,6 +26,7 @@
 //
 
 #import "ViewController.h"
+#import "LPCEncoder.h"
 
 @implementation ViewController
 
@@ -92,7 +93,31 @@
     // Load in the sample file
     //
     [self openFileWithFilePathURL:[NSURL fileURLWithPath:kAudioFileDefault]];
+    
 }
+
+#pragma mark - Fetch Did Finished
+- (void)fetchDidComplete: (NSNotification *) notification {
+    
+    // Convert NSMutableArray to float array
+    NSMutableArray *myArray = [notification object];
+    float *data = (float*) malloc(sizeof(float) * [myArray count]);
+    for (int i = 0; i < [myArray count]; i++) {
+        data[i] = [[myArray objectAtIndex:i] floatValue];
+    }
+    NSLog(@"Finally got here! and data[0] is %f", data[0]);
+    
+    // TODO start working on the real audio data from here
+    LPCEncoder *encoder = [[LPCEncoder alloc] init];
+    encoder.data = data;
+    [encoder encoderTop];
+    
+    // remove notification
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"fetchDidComplete"
+                                                  object:nil];
+}
+
 
 //------------------------------------------------------------------------------
 #pragma mark - Action Extensions
@@ -111,22 +136,44 @@
     self.audioPlot.shouldMirror = YES;
     
     
-    int reSampleRate = 8000;
-    __block float **data;
+    // TODO this should be SampleRate in practice
+    int reSampleRate = 1000;
+    __block float *data = (malloc(sizeof(float)*100000));
     
     //
     // Get the audio data from the audio file
     //
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(fetchDidComplete:)
+                                                 name:@"fetchDidComplete"
+                                               object:nil];
+    
     __weak typeof (self) weakSelf = self;
     [self.audioFile getWaveformDataWithCompletionBlockResolution:^(float **waveformData,
                                                          int length)
     {
         [weakSelf.audioPlot updateBuffer:waveformData[0]
                           withBufferSize:length];
-        for (int i = 0; i < length; i++)
-            NSLog(@"%f",waveformData[0][i]);
         
-        data = waveformData;
+        // First channel deep copy
+        //data = (float*) (malloc(sizeof(float)*length));
+        for (int i = 0; i < length; i++) {
+            data[i] = waveformData[0][i];
+        }
+        
+        // float Array and NSMutableArray Conversion for Notification Sending
+        NSMutableArray *myArray = [NSMutableArray arrayWithCapacity:length];
+        for (int i = 0; i < length; i++) {
+            NSNumber *number = [[NSNumber alloc] initWithFloat:waveformData[0][i]];
+            [myArray addObject:number];
+        }
+        // Auctually send the notification and myArray is transferred to the receiver
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"fetchDidComplete"
+                                                            object:myArray
+                                                          userInfo:nil];
+        
+        NSLog(@"inside block data[0]: %f", data[0]);
         
     } reSampleRate:reSampleRate];
 }
