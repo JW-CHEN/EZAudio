@@ -7,3 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
+
+#import "LPCDecoder.h"
+
+@implementation LPCDecoder
+
+- (void) decoderTop:(id)encodedData {
+    // TODO decoding the LPC data
+}
+
+
+@end

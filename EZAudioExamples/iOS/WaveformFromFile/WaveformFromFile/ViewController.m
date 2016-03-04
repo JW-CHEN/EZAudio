@@ -27,6 +27,7 @@
 
 #import "ViewController.h"
 #import "LPCEncoder.h"
+#import "LPCDecoder.h"
 
 @implementation ViewController
 
@@ -98,19 +99,26 @@
 
 #pragma mark - Fetch Did Finished
 - (void)fetchDidComplete: (NSNotification *) notification {
+   
+    LPCEncoder *encoder = [[LPCEncoder alloc] init];
+    LPCDecoder *decoder = [[LPCDecoder alloc] init];
     
     // Convert NSMutableArray to float array
     NSMutableArray *myArray = [notification object];
-    float *data = (float*) malloc(sizeof(float) * [myArray count]);
-    for (int i = 0; i < [myArray count]; i++) {
+    encoder.dataLength = (int) [myArray count];
+    float *data = (float*) malloc(sizeof(float) * encoder.dataLength);
+    for (int i = 0; i < encoder.dataLength; i++) {
         data[i] = [[myArray objectAtIndex:i] floatValue];
     }
     NSLog(@"Finally got here! and data[0] is %f", data[0]);
     
     // TODO start working on the real audio data from here
-    LPCEncoder *encoder = [[LPCEncoder alloc] init];
     encoder.data = data;
     [encoder encoderTop];
+    // Encoded Data already in the encoder object
+    NSLog(@"encodedData pitchPeriod %d", encoder.encodedData.pitchPeriod[0]);
+    // Pass Encoded Data to decoder object
+    [decoder decoderTop: encoder.encodedData];
     
     // remove notification
     [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -138,7 +146,6 @@
     
     // TODO this should be SampleRate in practice
     int reSampleRate = 1000;
-    __block float *data = (malloc(sizeof(float)*100000));
     
     //
     // Get the audio data from the audio file
@@ -156,10 +163,9 @@
         [weakSelf.audioPlot updateBuffer:waveformData[0]
                           withBufferSize:length];
         
-        // First channel deep copy
-        //data = (float*) (malloc(sizeof(float)*length));
-        for (int i = 0; i < length; i++) {
-            data[i] = waveformData[0][i];
+        // Using difference to represent the signal
+        for (int i = 1; i < length; i ++) {
+            waveformData[0][i-1] = waveformData[0][i] - preEmphasisFilterRatio*waveformData[0][i-1];
         }
         
         // float Array and NSMutableArray Conversion for Notification Sending
@@ -172,8 +178,6 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:@"fetchDidComplete"
                                                             object:myArray
                                                           userInfo:nil];
-        
-        NSLog(@"inside block data[0]: %f", data[0]);
         
     } reSampleRate:reSampleRate];
 }

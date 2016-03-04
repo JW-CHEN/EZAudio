@@ -9,5 +9,13 @@
 #ifndef LPCDecoder_h
 #define LPCDecoder_h
 
+@interface LPCDecoder: NSObject {
+    
+}
+
+- (void) decoderTop: encodedData;
+
+@end
+
 
 #endif /* LPCDecoder_h */

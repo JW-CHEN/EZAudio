@@ -7,3 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+
+#import "EncodedData.h"
+
+@implementation EncodedData
+
+
+@end
