@@ -6,6 +6,9 @@
 //  Copyright © 2016 Syed Haris Ali. All rights reserved.
 //
 
+#import "Comm.h"
+#import "EncodedData.h"
+
 #ifndef LPCDecoder_h
 #define LPCDecoder_h
 
@@ -13,7 +16,9 @@
     
 }
 
-- (void) decoderTop: encodedData;
+@property EncodedData* encodedData;
+
+- (void) decoderTop;
 
 @end
 

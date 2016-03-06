@@ -7,17 +7,14 @@
 //
 
 #import "EncodedData.h"
+#import "Comm.h"
 
 #ifndef LPCEncoder_h
 #define LPCEncoder_h
 
-#define LPCDefaultOrder 10
-#define BitsPerFrame 54
-#define SampleRate 8000
-#define frameDuration 0.0225
 #define ZeroCrossRateThreshold 0.6
 #define CorrToAutocorrThreshold 0.3
-#define preEmphasisFilterRatio 0.93
+
 
 @interface LPCEncoder : NSObject {
     

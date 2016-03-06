@@ -118,7 +118,8 @@
     // Encoded Data already in the encoder object
     NSLog(@"encodedData pitchPeriod %d", encoder.encodedData.pitchPeriod[0]);
     // Pass Encoded Data to decoder object
-    [decoder decoderTop: encoder.encodedData];
+    decoder.encodedData = encoder.encodedData;
+    [decoder decoderTop];
     
     // remove notification
     [[NSNotificationCenter defaultCenter] removeObserver:self

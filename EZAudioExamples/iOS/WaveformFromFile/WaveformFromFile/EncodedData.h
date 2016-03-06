@@ -29,6 +29,12 @@
 // Voice or Unvoice
 @property BOOL* isvoice;
 
+// Number of frames
+@property int mFrame;
+
+// Total data length;
+@property int dataLength;
+
 @end
 
 #endif /* EncodedData_h */

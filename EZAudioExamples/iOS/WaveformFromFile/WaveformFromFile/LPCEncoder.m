@@ -124,8 +124,8 @@
     for (int i = 0; i < cumulateLength; i++) {
         temp += error[i] * error[i];
     }
-    if (frameNumber == 6)
-        NSLog(@"temp %f, cumulateLength %d", temp, cumulateLength);
+    //if (frameNumber == 6)
+    //    NSLog(@"temp %f, cumulateLength %d", temp, cumulateLength);
     return temp / cumulateLength;
 }
 
@@ -187,7 +187,7 @@
     // fs: Frame size in ms <==> mPointsPerFrame
     int mPointsPerFrame = frameDuration * SampleRate;
     // Including overlapping between frames
-    int overlapPerFrame = mPointsPerFrame / 2;
+    int overlapPerFrame = mPointsPerFrame * overlapRate;
     //int overlapPerFrame = 0;
     int movePointsPerFrame = mPointsPerFrame - overlapPerFrame;
     
@@ -195,6 +195,8 @@
     int currentFrameLength;
     int remainingPoints = self.dataLength;
     int mFrame = floor(self.dataLength/movePointsPerFrame)+1;
+    self.encodedData.dataLength = self.dataLength;
+    self.encodedData.mFrame = mFrame;
     self.encodedData.isvoice = (BOOL*) malloc(sizeof(BOOL) * mFrame);
     self.encodedData.gain = (float*) malloc(sizeof(float) * mFrame);
     self.encodedData.pitchPeriod = (int*) malloc(sizeof(int) * mFrame);
@@ -204,7 +206,7 @@
         float* waveFrame = self.data + movePointsPerFrame * i;
         currentFrameLength = MIN(mPointsPerFrame, remainingPoints);
         self.encodedData.isvoice[i] = [self isVoiced:waveFrame frameLength:currentFrameLength];
-        self.encodedData.pitchPeriod[i] = [self pitchPeriodEstimate:waveFrame frameLength:mPointsPerFrame];
+        self.encodedData.pitchPeriod[i] = [self pitchPeriodEstimate:waveFrame frameLength:currentFrameLength];
         self.encodedData.parcoCoefficient[i] = [self coefficientEstimate:waveFrame frameLength:currentFrameLength];
         self.encodedData.gain[i] = [self gainEstimate:waveFrame frameLength:currentFrameLength frameNumer:i];
         remainingPoints -= movePointsPerFrame;
