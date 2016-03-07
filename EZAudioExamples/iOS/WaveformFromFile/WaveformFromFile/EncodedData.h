@@ -15,7 +15,7 @@
 
 // These properties are per frame
 // a1, a2, ... ap
-@property float* coefficient;
+@property float** coefficient;
 
 // log(k1), log(k2), k3, k4, ... kp
 @property float** parcoCoefficient;

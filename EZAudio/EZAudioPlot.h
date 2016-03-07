@@ -143,9 +143,16 @@ FOUNDATION_EXPORT UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength;
  @param rect       An EZRect (CGRect on iOS or NSRect on OSX) that the path should be created relative to.
  @return A CGPathRef that is the path you'd like to store on the `waveformLayer` to visualize the audio data.
  */
+
 - (CGPathRef)createPathWithPoints:(CGPoint *)points
                        pointCount:(UInt32)pointCount
                            inRect:(EZRect)rect;
+
+- (CGPathRef)createPathWithPoints:(CGPoint **)pointsArray
+                  pointCountArray:(UInt32*)pointCountArray
+                           inRect:(EZRect)rect
+                     YabsPosition:(float*)YabsPosition
+                            mPlot:(int)mPlot;
 
 //------------------------------------------------------------------------------
 
@@ -184,6 +191,13 @@ FOUNDATION_EXPORT UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength;
  Method to cause the waveform layer's path to get recreated and redrawn on screen using the last buffer of data provided. This is the equivalent to the drawRect: method used to normally subclass a view's drawing. This normally don't need to be overrode though - a better approach would be to override the `createPathWithPoints:pointCount:inRect:` method.
  */
 - (void)redraw;
+- (void)redraw: (float*) YabsPosition
+         mPlot: (int) mPlot;
+
+- (void)updateBuffer:(float *)buffer
+      withBufferSize:(UInt32*)bufferSize
+        YabsPosition:(float*)YabsPosition
+               mPlot:(int)mPlot;
 
 //------------------------------------------------------------------------------
 
@@ -194,6 +208,7 @@ FOUNDATION_EXPORT UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength;
  @param length The length of the float array as an int.
  */
 -(void)setSampleData:(float *)data length:(int)length;
+-(void)setSampleData:(float *)data length:(UInt32*)length mPlot:(int) mPlot;
 
 //------------------------------------------------------------------------------
 
@@ -203,5 +218,7 @@ FOUNDATION_EXPORT UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength;
 @property (nonatomic, strong) EZAudioDisplayLink *displayLink;
 @property (nonatomic, assign) EZPlotHistoryInfo  *historyInfo;
 @property (nonatomic, assign) CGPoint            *points;
+@property (nonatomic, assign) CGPoint            **pointsArray;
 @property (nonatomic, assign) UInt32              pointCount;
+@property (nonatomic, assign) UInt32*             pointCountArray;
 @end

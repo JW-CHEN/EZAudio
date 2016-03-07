@@ -35,7 +35,7 @@
 //
 // Here's the default audio file included with the example
 //
-#define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"input2" ofType:@"wav"]
+#define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"s1ofwb" ofType:@"wav"]
 
 //------------------------------------------------------------------------------
 #pragma mark - ViewController
@@ -50,7 +50,7 @@
 //
 // The EZAudioFile representing of the currently selected audio file
 //
-@property (nonatomic,strong) EZAudioFile *audioFile;
+@property (nonatomic,strong)EZAudioFile  *audioFile;
 
 //
 // The CoreGraphics based audio plot
@@ -61,6 +61,11 @@
 // A label to display the current file path with the waveform shown
 //
 @property (nonatomic,weak) IBOutlet UILabel *filePathLabel;
+
+- (IBAction)inputSelector_1m:(id)sender;
+- (IBAction)inputSelector_2m:(id)sender;
+- (IBAction)inputSelector_1f:(id)sender;
+- (IBAction)inputSelector_2f:(id)sender;
 
 @end
 

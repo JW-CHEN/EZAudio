@@ -18,7 +18,10 @@
 
 @property EncodedData* encodedData;
 
-- (void) decoderTop;
+@property float* decodedData;
+
+
+- (float*) decoderTop;
 
 @end
 

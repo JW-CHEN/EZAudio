@@ -487,6 +487,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				"HEADER_SEARCH_PATHS[arch=*]" = "\"$SRCROOT/EZAudio/EZAudioExamples/iOS/WaveformFromFile/TheAmazingAudioEngine-master/TheAmazingAudioEngine\"";
 				INFOPLIST_FILE = EZAudio/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -503,6 +504,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				"HEADER_SEARCH_PATHS[arch=*]" = "\"$SRCROOT/EZAudio/EZAudioExamples/iOS/WaveformFromFile/TheAmazingAudioEngine-master/TheAmazingAudioEngine\"";
 				INFOPLIST_FILE = EZAudio/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -580,6 +582,7 @@
 				8A5A4BAF1BBBDCB200A8A048 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

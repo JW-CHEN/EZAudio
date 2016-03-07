@@ -17,5 +17,16 @@
 #define frameDuration 0.0225
 #define overlapRate 0.4
 
+#import <TheAmazingAudioEngine.h>
+
+@interface Comm : NSObject {
+    
+}
+
+- (void) saveToFile: (float*) dataFrame
+         dataLength: (int) dataLength ;
+
+@end
+
 
 #endif /* Comm_h */

@@ -13,7 +13,7 @@
 #define LPCEncoder_h
 
 #define ZeroCrossRateThreshold 0.6
-#define CorrToAutocorrThreshold 0.3
+#define CorrToAutocorrThreshold 0.4
 
 
 @interface LPCEncoder : NSObject {
@@ -29,20 +29,21 @@
 
 // Estimate the LPC-10's 10 coefficients
 - (float*) coefficientEstimate: (float*) frameData
-                    frameLength:(int) frameLength;
+                   frameLength: (int) frameLength
+                   frameNumber: (int) frameNumber;
 
-// Estimate the pitchPeriod
-- (int) pitchPeriodEstimate:(float*) frameData
-                  frameLength:(int) frameLength;
-
-// Estimate the Gain
-- (float) gainEstimate: (float*) frameData
-           frameLength: (int) frameLength
-            frameNumer: (int) frameNumber ;
-
-// voiced or Unvoiced judgement
-- (BOOL) isVoiced:(float*) frameData
-      frameLength:(int) frameLength;
+//// Estimate the pitchPeriod
+//- (int) pitchPeriodEstimate:(float*) frameData
+//                  frameLength:(int) frameLength;
+//
+//// Estimate the Gain
+//- (float) gainEstimate: (float*) frameData
+//           frameLength: (int) frameLength
+//            frameNumer: (int) frameNumber ;
+//
+//// voiced or Unvoiced judgement
+//- (BOOL) isVoiced:(float*) frameData
+//      frameLength:(int) frameLength;
 
 - (void) encoderTop;
 

@@ -513,6 +513,7 @@ typedef struct
                         reSampleRate:(UInt32)reSampleRate
 {
     UInt32 userResolution = floor(self.info->duration * reSampleRate);
+    NSLog(@"duration %f", self.info->duration);
     [self getWaveformDataWithNumberOfPoints:userResolution
                                  completion:waveformDataCompletionBlock];
 }

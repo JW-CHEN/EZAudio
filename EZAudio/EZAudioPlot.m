@@ -261,17 +261,42 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
     CGPathRelease(path);
 }
 
+
+- (void)redraw: (float*) YabsPosition
+         mPlot: (int) mPlot
+{
+    EZRect frame = [self.waveformLayer frame];
+    CGPathRef path = [self createPathWithPoints:self.pointsArray
+                                pointCountArray:self.pointCountArray
+                                         inRect:frame
+                                   YabsPosition:YabsPosition
+                                          mPlot:mPlot];
+    if (self.shouldOptimizeForRealtimePlot)
+    {
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+        self.waveformLayer.path = path;
+        [CATransaction commit];
+    }
+    else
+    {
+        self.waveformLayer.path = path;
+    }
+    CGPathRelease(path);
+}
+
 //------------------------------------------------------------------------------
 
 - (CGPathRef)createPathWithPoints:(CGPoint *)points
-                  pointCount:(UInt32)pointCount
-                      inRect:(EZRect)rect
+                       pointCount:(UInt32)pointCount
+                           inRect:(EZRect)rect
 {
     CGMutablePathRef path = NULL;
     if (pointCount > 0)
     {
         path = CGPathCreateMutable();
         double xscale = (rect.size.width) / ((float)self.pointCount);
+        // 4.0 means it locate in the upper 1/4 part of screen
         double halfHeight = floor(rect.size.height / 2.0);
         int deviceOriginFlipped = [self isDeviceOriginFlipped] ? -1 : 1;
         CGAffineTransform xf = CGAffineTransformIdentity;
@@ -303,6 +328,58 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
         {
             xf = CGAffineTransformScale(xf, 1.0f, -1.0f);
             CGPathAddLines(path, &xf, self.points, self.pointCount);
+        }
+        if (self.shouldFill)
+        {
+            CGPathCloseSubpath(path);
+        }
+    }
+    return path;
+}
+
+- (CGPathRef)createPathWithPoints:(CGPoint **)pointsArray
+                       pointCountArray:(UInt32*)pointCountArray
+                           inRect:(EZRect)rect
+                     YabsPosition:(float*)YabsPosition
+                          mPlot:(int)mPlot
+{
+    CGMutablePathRef path = NULL;
+    path = CGPathCreateMutable();
+    for (int plotInd = 0; plotInd < mPlot; plotInd++)
+    {
+        double xscale = (rect.size.width) / ((float)self.pointCountArray[plotInd]);
+        // 4.0 means it locate in the upper 1/4 part of screen
+        double halfHeight = floor(rect.size.height / 2.0);
+        int deviceOriginFlipped = [self isDeviceOriginFlipped] ? -1 : 1;
+        CGAffineTransform xf = CGAffineTransformIdentity;
+        CGFloat translateY = 0.0f;
+        if (!self.shouldCenterYAxis)
+        {
+#if TARGET_OS_IPHONE
+            translateY = CGRectGetHeight(rect);
+            NSLog(@"shouldCenterYAxis is NO with translateY :%f", translateY);
+#elif TARGET_OS_MAC
+            translateY = 0.0f;
+#endif
+        }
+        else
+        {
+            translateY = halfHeight * YabsPosition[plotInd] + rect.origin.y;
+            NSLog(@"shouldCenterYAxis is YES with translateY :%f", translateY);
+        }
+        xf = CGAffineTransformTranslate(xf, 0.0, translateY);
+        double yScaleFactor = halfHeight;
+        if (!self.shouldCenterYAxis)
+        {
+            yScaleFactor = 2.0 * halfHeight;
+        }
+        NSLog(@"deviceOriginFlipped :%d, yScaleFactor :%f", deviceOriginFlipped, yScaleFactor);
+        xf = CGAffineTransformScale(xf, xscale, deviceOriginFlipped * yScaleFactor);
+        CGPathAddLines(path, &xf, self.pointsArray[plotInd], self.self.pointCountArray[plotInd]);
+        if (self.shouldMirror)
+        {
+            xf = CGAffineTransformScale(xf, 1.0f, -1.0f);
+            CGPathAddLines(path, &xf, self.pointsArray[plotInd], self.self.pointCountArray[plotInd]);
         }
         if (self.shouldFill)
         {
@@ -348,6 +425,45 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
     }
 }
 
+- (void)updateBuffer:(float*)buffer
+      withBufferSize:(UInt32*)bufferSize
+        YabsPosition:(float*) YabsPosition
+               mPlot:(int) mPlot
+{
+    // append the buffer to the history
+//    [EZAudioUtilities appendBufferRMS:buffer
+//                       withBufferSize:bufferSize
+//                        toHistoryInfo:self.historyInfo];
+    
+    // copy samples
+    NSLog(@"updateBuffer %f != %f", buffer[20], buffer[20+2915]);
+    [self setSampleData:buffer
+                 length:bufferSize
+                  mPlot:mPlot];
+    
+//    switch (self.plotType)
+//    {
+//        case EZPlotTypeBuffer:
+//            NSLog(@"Type Buffer");
+//            [self setSampleData:buffer
+//                         length:bufferSize];
+//            break;
+//        case EZPlotTypeRolling:
+//            NSLog(@"Type Rolling");
+//            [self setSampleData:self.historyInfo->buffer
+//                         length:self.historyInfo->bufferSize];
+//            break;
+//        default:
+//            break;
+//    }
+    
+    // update drawing
+    if (!self.shouldOptimizeForRealtimePlot)
+    {
+        [self redraw: (float*) YabsPosition mPlot:mPlot];
+    }
+}
+
 //------------------------------------------------------------------------------
 
 - (void)setSampleData:(float *)data length:(int)length
@@ -362,6 +478,41 @@ UInt32 const EZAudioPlotDefaultMaxHistoryBufferLength = 8192;
     }
     points[0].y = points[length - 1].y = 0.0f;
     self.pointCount = length;
+}
+
+- (void)setSampleData:(float *)data length:(UInt32*)length mPlot:(int)mPlot
+{
+    //NSLog(@"points length: %d", length);
+    self.pointsArray = malloc(sizeof(CGPoint*) * mPlot);
+    self.pointCountArray = malloc(sizeof(UInt32) * mPlot);
+    
+    int currPoints = 0;
+    for (int j = 0; j < mPlot; j++) {
+        self.pointsArray[j] = malloc(sizeof(CGPoint) * length[j]);
+        for (int i = 0; i < length[j]; i++)
+        {
+            self.pointsArray[j][i].x = i;
+            self.pointsArray[j][i].y = data[i+currPoints] * self.gain;
+            if (j == 1 && i == 10) {
+                NSLog(@"currPoints %d", currPoints);
+                NSLog(@"%f == %f", data[10], data[10+currPoints]);
+            }
+        }
+        self.pointsArray[j][0].y = self.pointsArray[j][length[j] - 1].y = 0.0f;
+        self.pointCountArray[j] = length[j];
+        currPoints += length[j];
+    }
+    
+    
+//    NSString* filepath = [NSHomeDirectory() stringByAppendingPathComponent:@"output.txt"];
+//    NSLog(@"%@",filepath);
+//    NSString* textToWrite = @"";
+//    NSError *err;
+//    for (int i = 0; i < length[0]; i++) {
+//        textToWrite = [textToWrite stringByAppendingString:[NSString stringWithFormat:@"decodedWaveform[%d]: %f\n", i, self.pointsArray[0][i].y]];
+//    }
+//    // Do not use NSUnicodeStringEncoding, it will add "@" before every character
+//    [textToWrite writeToFile:filepath atomically:YES encoding:NSUTF8StringEncoding error:&err];
 }
 
 //------------------------------------------------------------------------------
