@@ -15,7 +15,9 @@
 #define preEmphasisFilterRatio 0.93
 #define SampleRate 8000
 #define frameDuration 0.0225
-#define overlapRate 0.4
+#define overlapRate 0
+#define energyThreshold 2
+#define zeroCrossRateThreshold 0.3
 
 #import <TheAmazingAudioEngine.h>
 

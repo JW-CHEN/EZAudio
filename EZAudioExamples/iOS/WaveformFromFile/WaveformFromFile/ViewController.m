@@ -118,8 +118,8 @@
     float *data = (float*) malloc(sizeof(float) * encoder.dataLength);
     for (int i = 0; i < encoder.dataLength; i++) {
         data[i] = [[myArray objectAtIndex:i] floatValue];
-        //NSLog(@"data[%d] %f", i, data[i]);
     }
+    NSLog(@"orignal dataLength after sampling %d", encoder.dataLength);
     
     
     
@@ -137,6 +137,9 @@
     for (int i = 0; i < encoder.dataLength; i++)
         decodedData[i] = decodedData[i] / maxValue;
     
+    Comm *comm = [[Comm alloc] init];
+    [comm saveToFile:decodedData dataLength:encoder.dataLength];
+    
     float* combinedData = malloc(sizeof(float) * encoder.dataLength * 2);
     for (int i = 0; i < encoder.dataLength*2; i++) {
         if (i < encoder.dataLength)
@@ -152,113 +155,30 @@
     float* yabsPosition = malloc(sizeof(float) * 2);
     yabsPosition[0] = 0.3;
     yabsPosition[1] = 0.9;
-    //[self.audioPlot updateBuffer:decodedData withBufferSize:encoder.dataLength YabsPosition:0.9];
     [self.audioPlot updateBuffer:combinedData withBufferSize:bufferSizeArr YabsPosition:yabsPosition mPlot:2];
-    
-//    for (int i = 1; i < encoder.encodedData.dataLength; i ++) {
-//        decoder.decodedData[i-1] = decoder.decodedData[i] + decoder.decodedData[i-1];
-//        //NSLog(@"decoder data[%d]: %f", i, decoder.decodedData[i-1]);
-//    }
-    
-    // Make sound via decoder.decodedData & TheAmazingAudioEngine
-    //[self playAudioFromFloatArray: decoder.decodedData
-    //                   dataLength: (int) encoder.dataLength];
     
     // remove notification
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:@"fetchDidComplete"
                                                   object:nil];
+    
+    // create notification for audio file write
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(outputRawDataToWAVFile:)
+                                                 name:@"outputRawDataToWAVFile"
+                                               object:nil];
+    // float Array and NSMutableArray Conversion for Notification Sending
+    NSMutableArray *decodeDataArray = [NSMutableArray arrayWithCapacity:encoder.dataLength];
+    for (int i = 0; i < encoder.dataLength; i++) {
+        NSNumber *number = [[NSNumber alloc] initWithFloat:decodedData[i]];
+        [myArray addObject:number];
+    }
+    NSLog(@"First Here!");
+    // Auctually send the notification and myArray is transferred to the receiver
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"outputRawDataToWAVFile"
+                                                        object:decodeDataArray
+                                                      userInfo:nil];
 }
-
-# pragma mark - PlayAudioFromFloatArray
-//static void cleanupHandler(AEAudioController *audioController, void *userInfo, int userInfoLength) {
-//    struct cleanUpHandlerArgs *arg = (struct cleanUpHandlerArgs*)userInfo;
-//    free(arg->buffer);
-//    [audioController removeChannels:@[arg->channel]];
-//}
-//
-//struct cleanUpHandlerArgs { float *buffer; __unsafe_unretained AEBlockChannel *channel; };
-//
-//- (void) playAudioFromFloatArray: (float*) dataWaveForm
-//                      dataLength: (int) dataLength {
-//    srand48(time(0));
-//    // specify float point audio format
-//    AudioStreamBasicDescription audioFormat = [AEAudioController nonInterleavedFloatStereoAudioDescription];
-//    // setup the amazing audio engine
-//    self.audioController = [[AEAudioController alloc] initWithAudioDescription:audioFormat];
-//    float * buffer = (float*) malloc(sizeof(float) * dataLength);
-//    for (int i = 0; i < dataLength; i++) {
-//        buffer[i] = dataWaveForm[i];
-//    }
-//    
-//    __block int remainingDataLength = dataLength;
-//    __block BOOL processing = YES;
-//    __weak typeof(self) weakSelf = self;
-//    __block AEBlockChannel *channel = nil;
-//    // create a channel of audio
-//    //AEBlockChannel *audioChannel = [AEBlockChannel channelWithBlock:^(const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio) {
-//    channel = [AEBlockChannel channelWithBlock:^(const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio) {
-//        while (processing && frames) {
-//            if (remainingDataLength == 0) {
-//                processing = false;
-//                struct cleanUpHandlerArgs args = {buffer, channel};
-//                AEAudioControllerSendAsynchronousMessageToMainThread(weakSelf.audioController,
-//                                                                     cleanupHandler,
-//                                                                     &args,
-//                                                                     sizeof(struct cleanUpHandlerArgs));
-//                return;
-//            }
-//        
-//                // Non-Interleaved Stereo formats should have two -- one for left one for right)
-//                // UInt32 numberOfBuffers = audio->mNumberBuffers;
-//                // Currently only work for one channel
-//
-//            //UInt32 numberOfBuffers = 1;
-//            
-//            // iterate over the buffers
-//            //for (int i = 0; i < numberOfBuffers; i++) {
-//                
-//                UInt32 currFrame = MIN(remainingDataLength,frames);
-//                // Tell the buffer how big it needs to be. (frames == samples)
-//                audio->mBuffers[0].mDataByteSize = currFrame * sizeof(float);
-//                
-//                // Get a pointer to our output. We'll write samples here, and we'll hear
-//                // those samples through the speaker.
-//                float *output = (float *)audio->mBuffers[0].mData;
-//                
-//                // Compute the samples
-//                for (int j = 0; j < currFrame; j++) {
-//                    // Filling out random values will give us noise:
-//                    output[j] = (float)drand48();
-//                    NSLog(@"dataWaveForm[%d]: %f", j, drand48());
-//                    output[j] = dataWaveForm[j+700] * 100;
-//                }
-//            remainingDataLength -= currFrame;
-//            //}
-//        }
-//    }];
-//    // Turn down the volume on the channel, so the noise isn't too loud
-//    [channel setVolume:.02];
-//    
-//    // Set description
-//    AudioStreamBasicDescription audioDescription = [AEAudioController nonInterleavedFloatStereoAudioDescription];
-//    audioDescription.mSampleRate = 8000;
-//    channel.audioDescription = audioDescription;
-//    
-//    // Add the channel to the audio controller
-//    [self.audioController addChannels:@[channel]];
-//    
-//    // Hold onto the noiseChannel
-//    self.audioChannel = channel;
-//    
-//    // Turn on the audio controller
-//    NSError *error = NULL;
-//    [self.audioController start:&error];
-//    
-//    if (error) {
-//        NSLog(@"There was an error starting the controller: %@", error);
-//    }
-//}
 
 
 //------------------------------------------------------------------------------
@@ -279,7 +199,7 @@
     
     
     // TODO this should be SampleRate in practice
-    int reSampleRate = 1000;
+    int reSampleRate = 8000;
     
     //
     // Get the audio data from the audio file
@@ -294,18 +214,6 @@
     [self.audioFile getWaveformDataWithCompletionBlockResolution:^(float **waveformData,
                                                          int length)
     {
-//        UInt32* bufferSizeArr = malloc(sizeof(int) * 1);
-//        bufferSizeArr[0] = length;
-//        float* yabsPosition = malloc(sizeof(float) * 1);
-//        yabsPosition[0] = 0.3;
-//        
-//        [weakSelf.audioPlot updateBuffer:waveformData[0]
-//                          withBufferSize:bufferSizeArr
-//                            YabsPosition:yabsPosition
-//                                   mPlot:1];
-//
-//        Comm *comm = [[Comm alloc] init];
-//        [comm saveToFile: waveformData[0] dataLength:length];
         
         // Using difference to represent the signal
         for (int i = 1; i < length; i ++) {
@@ -328,21 +236,71 @@
 
 - (IBAction)inputSelector_1m:(id)sender {
     NSLog(@"s1omwb");
-    [self openFileWithFilePathURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"s1omwb" ofType:@"wav"]]];
+    NSURL *audioFileURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"s1omwb" ofType:@"wav"]];
+    [self openFileWithFilePathURL: audioFileURL];
 }
 
 - (IBAction)inputSelector_2m:(id)sender {
     NSLog(@"s2omwb");
-    [self openFileWithFilePathURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"s2omwb" ofType:@"wav"]]];
+    NSURL *audioFileURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"s2omwb" ofType:@"wav"]];
+    [self openFileWithFilePathURL: audioFileURL];
 }
 
 - (IBAction)inputSelector_1f:(id)sender {
     NSLog(@"s1ofwb");
-    [self openFileWithFilePathURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"s1ofwb" ofType:@"wav"]]];
+    NSURL *audioFileURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"s1ofwb" ofType:@"wav"]];
+    [self openFileWithFilePathURL: audioFileURL];
 }
 
 - (IBAction)inputSelector_2f:(id)sender {
     NSLog(@"s2ofwb");
-    [self openFileWithFilePathURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"s2ofwb" ofType:@"wav"]]];
+    NSURL *audioFileURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"s2ofwb" ofType:@"wav"]];
+    [self openFileWithFilePathURL: audioFileURL];
 }
+
+- (void) outputRawDataToWAVFile: (NSNotification *) notification {
+    NSLog(@"Then Here!");
+
+    AudioStreamBasicDescription outputFormat = {0};
+    outputFormat.mSampleRate = 16000;
+    outputFormat.mFormatID = kAudioFormatLinearPCM;
+    outputFormat.mBitsPerChannel = 32;
+    outputFormat.mFormatFlags = kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked;
+    outputFormat.mFramesPerPacket = 1;
+    outputFormat.mChannelsPerFrame = 1;
+    outputFormat.mBytesPerFrame = 4;
+    outputFormat.mBytesPerPacket = 4;
+    
+    AudioFileID outputFile;
+    NSURL* outputDirNSURL = [[NSURL alloc] initWithString: [[NSBundle mainBundle] bundlePath]];
+    NSURL* outputFileNSURL = [outputDirNSURL URLByAppendingPathComponent:@"decoded.wav"];
+    NSLog(@"%@", outputFileNSURL);
+    
+    CFURLRef outputFileURL =
+    CFURLCreateWithFileSystemPath(kCFAllocatorDefault, CFSTR("decoded.wav"), kCFURLPOSIXPathStyle, FALSE);
+    
+    AudioFileCreateWithURL((__bridge CFURLRef)outputFileNSURL, kAudioFileWAVEType, &outputFormat, kAudioFileFlags_EraseFile, &outputFile);
+    
+    // Convert NSMutableArray to float array
+    NSMutableArray *myArray = [notification object];
+    int dataLength = (int) [myArray count];
+    UInt32 sizeOfBuffer = (UInt32) dataLength * sizeof(float);
+    float *audioBuffer = (float*)malloc(sizeOfBuffer);
+    
+    for (int i = 0; i < dataLength; i++) {
+        audioBuffer[i] = [[myArray objectAtIndex:i] floatValue];
+    }
+    AudioFileWriteBytes(outputFile, FALSE, 0, &sizeOfBuffer, audioBuffer);
+    
+    self._audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:outputFileNSURL error:nil];
+    [self._audioPlayer play];
+    
+    CFRelease(outputFileURL);
+    AudioFileClose(outputFile);
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"outputRawDataToWAVFile"
+                                                  object:nil];
+}
+
 @end

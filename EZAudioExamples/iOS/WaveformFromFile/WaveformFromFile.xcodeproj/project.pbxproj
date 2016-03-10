@@ -16,7 +16,6 @@
 		1AC7A3151C8C0D50008A3C82 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AC7A3121C8C0D50008A3C82 /* Accelerate.framework */; };
 		1AC7A3161C8C0D50008A3C82 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AC7A3131C8C0D50008A3C82 /* AudioToolbox.framework */; };
 		1AC7A3171C8C0D50008A3C82 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AC7A3141C8C0D50008A3C82 /* AVFoundation.framework */; };
-		1AC7A3241C8CA5C3008A3C82 /* libTheAmazingAudioEngine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AC7A31F1C8C0F20008A3C82 /* libTheAmazingAudioEngine.a */; };
 		1AC7A32B1C8CE976008A3C82 /* s2omwb.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1AC7A32A1C8CE976008A3C82 /* s2omwb.wav */; };
 		1AC7A3311C8D55A1008A3C82 /* Comm.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC7A3301C8D55A1008A3C82 /* Comm.m */; };
 		1AC7A3371C8D6315008A3C82 /* s1ofwb.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1AC7A3361C8D6315008A3C82 /* s1ofwb.wav */; };
@@ -32,27 +31,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		1AC7A31E1C8C0F20008A3C82 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1AC7A3181C8C0F20008A3C82 /* TheAmazingAudioEngine.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4C215CEC1523A7D500D36CAD;
-			remoteInfo = TheAmazingAudioEngine;
-		};
-		1AC7A3201C8C0F20008A3C82 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1AC7A3181C8C0F20008A3C82 /* TheAmazingAudioEngine.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 7A5687101B54610900243427;
-			remoteInfo = "TheAmazingAudioEngine OS X";
-		};
-		1AC7A3221C8C0F20008A3C82 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1AC7A3181C8C0F20008A3C82 /* TheAmazingAudioEngine.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 17BB5B401BECD101007A2892;
-			remoteInfo = "TheAmazingAudioEngine tvOS";
-		};
 		66374F1A1C545B4F000B19D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 66374F151C545B4F000B19D0 /* EZAudio.xcodeproj */;
@@ -104,7 +82,6 @@
 		1AC7A3121C8C0D50008A3C82 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		1AC7A3131C8C0D50008A3C82 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1AC7A3141C8C0D50008A3C82 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		1AC7A3181C8C0F20008A3C82 /* TheAmazingAudioEngine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = TheAmazingAudioEngine.xcodeproj; path = "TheAmazingAudioEngine-master/TheAmazingAudioEngine.xcodeproj"; sourceTree = "<group>"; };
 		1AC7A32A1C8CE976008A3C82 /* s2omwb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = s2omwb.wav; sourceTree = "<group>"; };
 		1AC7A3301C8D55A1008A3C82 /* Comm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Comm.m; sourceTree = "<group>"; };
 		1AC7A3361C8D6315008A3C82 /* s1ofwb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = s1ofwb.wav; sourceTree = "<group>"; };
@@ -127,7 +104,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1AC7A3241C8CA5C3008A3C82 /* libTheAmazingAudioEngine.a in Frameworks */,
 				1AC7A3151C8C0D50008A3C82 /* Accelerate.framework in Frameworks */,
 				1AC7A3161C8C0D50008A3C82 /* AudioToolbox.framework in Frameworks */,
 				1AC7A3171C8C0D50008A3C82 /* AVFoundation.framework in Frameworks */,
@@ -138,16 +114,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1AC7A3191C8C0F20008A3C82 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				1AC7A31F1C8C0F20008A3C82 /* libTheAmazingAudioEngine.a */,
-				1AC7A3211C8C0F20008A3C82 /* libTheAmazingAudioEngine OS X.a */,
-				1AC7A3231C8C0F20008A3C82 /* libTheAmazingAudioEngine tvOS.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		66374E9A1C545AEA000B19D0 = {
 			isa = PBXGroup;
 			children = (
@@ -157,7 +123,6 @@
 				66374F151C545B4F000B19D0 /* EZAudio.xcodeproj */,
 				66374EA51C545AEA000B19D0 /* WaveformFromFile */,
 				66374EA41C545AEA000B19D0 /* Products */,
-				1AC7A3181C8C0F20008A3C82 /* TheAmazingAudioEngine.xcodeproj */,
 			);
 			sourceTree = "<group>";
 		};
@@ -268,10 +233,6 @@
 					ProductGroup = 66374F161C545B4F000B19D0 /* Products */;
 					ProjectRef = 66374F151C545B4F000B19D0 /* EZAudio.xcodeproj */;
 				},
-				{
-					ProductGroup = 1AC7A3191C8C0F20008A3C82 /* Products */;
-					ProjectRef = 1AC7A3181C8C0F20008A3C82 /* TheAmazingAudioEngine.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -281,27 +242,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		1AC7A31F1C8C0F20008A3C82 /* libTheAmazingAudioEngine.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libTheAmazingAudioEngine.a;
-			remoteRef = 1AC7A31E1C8C0F20008A3C82 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1AC7A3211C8C0F20008A3C82 /* libTheAmazingAudioEngine OS X.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libTheAmazingAudioEngine OS X.a";
-			remoteRef = 1AC7A3201C8C0F20008A3C82 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1AC7A3231C8C0F20008A3C82 /* libTheAmazingAudioEngine tvOS.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libTheAmazingAudioEngine tvOS.a";
-			remoteRef = 1AC7A3221C8C0F20008A3C82 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		66374F1B1C545B4F000B19D0 /* EZAudioiOS.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;

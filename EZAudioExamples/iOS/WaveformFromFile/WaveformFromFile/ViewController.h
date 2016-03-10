@@ -62,6 +62,8 @@
 //
 @property (nonatomic,weak) IBOutlet UILabel *filePathLabel;
 
+@property (strong, nonatomic) AVAudioPlayer* _audioPlayer;
+
 - (IBAction)inputSelector_1m:(id)sender;
 - (IBAction)inputSelector_2m:(id)sender;
 - (IBAction)inputSelector_1f:(id)sender;

@@ -58,10 +58,6 @@
     self.decodedData = (float*) malloc(sizeof(float) * self.encodedData.dataLength);
     int remainDataLength = self.encodedData.dataLength;
     int currFrameDataLength;
-    float* ramp = (float*) malloc(sizeof(float)*overlapPerFrame);
-    float* overlapDataFrame = (float*) malloc(sizeof(float)*overlapPerFrame);
-    for (int i = 0; i < overlapPerFrame; i++)
-        ramp[i] = i * (1.0/(overlapPerFrame-1));
     
     float predictPastSignal;
     for (int i = 0; i < mFrame; i++) {
@@ -78,32 +74,13 @@
             syncDataFrame[i][m] = predictPastSignal + self.encodedData.gain[i]*pulseTrainForFrame[m];
         }
         
-        // Step 2: Combine the overlapped waveform together with ramp coefficient
-        if (i == 0) {
-            for (int j = 0; j < movePerFrame; j++)
-                self.decodedData[j] = syncDataFrame[0][j];
-        }
-        else {
-            for (int j = 0; j < MIN(movePerFrame, remainDataLength); j++) {
-                if (j < overlapPerFrame)
-                    self.decodedData[i*movePerFrame + j] = overlapDataFrame[j] + syncDataFrame[i][j] * ramp[j];
-                else
-                    self.decodedData[i*movePerFrame + j] = syncDataFrame[i][j];
-            }
-        }
+        // Step 2: Combine the overlapped waveform
+        for (int j = 0; j < MIN(movePerFrame, remainDataLength); j++)
+            self.decodedData[i*movePerFrame + j] = syncDataFrame[i][j];
         
-        // calculate overlap frame ( last frame must has length less than movePerFrame )
-        if (i != mFrame - 1) {
-            for (int j = 0; j < overlapPerFrame; j++)
-                overlapDataFrame[j] = syncDataFrame[i][movePerFrame+j] * ramp[overlapPerFrame-1-j];
-        }
         // Step 3: Update remainDatalength
         remainDataLength -= movePerFrame;
     }
-    
-    // [LOG in CMDLINE]
-    //for (int i = 0; i < self.encodedData.dataLength; i++)
-        //NSLog(@"decodedWaveform[%d]: %f", i, decodedWaveForm[i]);
     
     
     for (int i = 1; i < self.encodedData.dataLength; i++) {
@@ -111,11 +88,6 @@
     }
     
     return self.decodedData;
-
-    
-    // [LOG in FILE]
-//    Comm *comm = [[Comm alloc] init];
-//    [comm saveToFile: self.decodedData dataLength: self.encodedData.dataLength];
 }
 
 

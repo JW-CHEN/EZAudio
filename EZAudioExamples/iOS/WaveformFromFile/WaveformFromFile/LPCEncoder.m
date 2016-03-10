@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "LPCEncoder.h"
 #import "EncodedData.h"
+#import <Accelerate/Accelerate.h>
 
 @interface LPCEncoder()
 
@@ -27,6 +28,7 @@
     
     float * autoResults = (float*) malloc(sizeof(float)*corrLength);
     float sum;
+    
     for (int step = 0; step < corrLength; step++) {
         sum = 0;
         for (int i = 0; i < seqLength - step; i++) {
@@ -82,144 +84,52 @@
     
     // Complete all the estimation here: pitchPeriod (include isvoice info), gain
     
-    // G:
-    self.encodedData.gain[frameNumber] = sqrt(E[LPCDefaultOrder]);
-    // NSLog(@"gain[%d] %f", frameNumber, self.encodedData.gain[frameNumber]);
+    // Use energy to predict:
+    float energy = 0.0;
+    float zeroCrossCnt = 0.0;
+    for (int i = 0; i < frameLength; i++) {
+        energy += fabsf(frameData[i]);
+        if (i < frameLength-1 && ((frameData[i] > 0 && frameData[i+1] < 0) ||
+            (frameData[i] < 0 && frameData[i+1] > 0)))
+            zeroCrossCnt += 1;
+    }
+    
     // pitchPeriod:
     self.encodedData.pitchPeriod[frameNumber] = 0;
-    float* predictionError = (float*) malloc(sizeof(float) * frameLength);
-    for (int i = 0; i < frameLength; i++) {
-        temp = 0.0;
-        // don't use previous frame data
-        for (int j = 1; j <= MIN(i, LPCDefaultOrder); j++)
-            temp += frameData[i-j] * coefficient[j];
-        predictionError[i] = frameData[i] - temp;
-    }
-    float* autoForError = [self autoCorrelation: predictionError seqLength: frameLength corrLength: frameLength];
-    float sndLargestValue = -INFINITY;
-    for (int i = 1; i < frameLength; i++) {
-        if (autoForError[i] > sndLargestValue) {
-            sndLargestValue = autoForError[i];
-            if (autoForError[i] > 0.05 * autoForError[0])
-                self.encodedData.pitchPeriod[frameNumber] = i;
+    //if (energy > energyThreshold && zeroCrossCnt/frameLength < ZeroCrossRateThreshold) {
+        float* predictionError = (float*) malloc(sizeof(float) * frameLength);
+        for (int i = 0; i < frameLength; i++) {
+            temp = 0.0;
+            // don't use previous frame data
+            for (int j = 1; j <= MIN(i, LPCDefaultOrder); j++)
+                temp += frameData[i-j] * coefficient[j];
+            predictionError[i] = frameData[i] - temp;
         }
-    }
+        float* autoForError = [self autoCorrelation: predictionError seqLength: frameLength corrLength: frameLength];
+        float sndLargestValue = -INFINITY;
+        for (int i = 1; i < frameLength; i++) {
+            if (autoForError[i] > sndLargestValue) {
+                sndLargestValue = autoForError[i];
+                if (autoForError[i] > 0.05 * autoForError[0])
+                    self.encodedData.pitchPeriod[frameNumber] = i;
+            }
+        }
+    //}
+    
+    // G:
+    self.encodedData.gain[frameNumber] = sqrt(E[LPCDefaultOrder]);
+    if (self.encodedData.pitchPeriod[frameNumber] != 0)
+        self.encodedData.gain[frameNumber] *= sqrt(self.encodedData.pitchPeriod[frameNumber]);
     
     return coefficient;
 }
-
-
-/********** Complete All Parameters Calculation one function: coefficientEstimate
- ********** First use coefficient and forget about parcoCoefficient *************/
-
-//- (int) pitchPeriodEstimate: (float*) frameData
-//frameLength: (int) frameLength {
-//    // TODO Using autocorrelation method to detect the pitch period
-//    float* autoResults = [self autoCorrelation:frameData seqLength:frameLength corrLength:frameLength];
-//    float pitchValue = -INFINITY;
-//    BOOL goingUp = false;
-//    int pitchPeriod = 0;
-//    for (int i = 1; i < frameLength; i++) {
-//        if ( !goingUp && autoResults[i-1] < autoResults[i]) {
-//            goingUp = true;
-//        }
-//        else if ( goingUp && autoResults[i-1] > autoResults[i]) {
-//            goingUp = false;
-//            if (autoResults[i-1] > pitchValue) {
-//                pitchValue = autoResults[i-1];
-//                pitchPeriod = i-1;
-//            }
-//        }
-//    }
-//    return pitchPeriod;
-//}
-
-
-//
-//- (float) gainEstimate: (float*) frameData
-//           frameLength: (int) frameLength
-//            frameNumer: (int) frameNumber {
-//    // coefficientEstimation should be done first and store the coefficient property in object
-//    float* error = (float*) malloc(sizeof(float) * frameLength);
-//    float temp;
-//    for (int i = 0; i < frameLength; i++) {
-//        temp = 0.0;
-//        // don't use previous frame data
-//        for (int j = 1; j <= MIN(i, LPCDefaultOrder); j++)
-//            temp += frameData[i-j] * self.encodedData.coefficient[j];
-//        error[i] = frameData[i] - temp;
-//    }
-//    int cumulateLength = frameLength;
-//    if (self.encodedData.isvoice[frameNumber]) {
-//        cumulateLength = floor(frameLength / self.encodedData.pitchPeriod[frameNumber]);
-//    }
-//    temp = 0.0;
-//    for (int i = 0; i < cumulateLength; i++) {
-//        temp += error[i] * error[i];
-//    }
-//    //if (frameNumber == 6)
-//    //    NSLog(@"temp %f, cumulateLength %d", temp, cumulateLength);
-//    return temp;
-//}
-//
-//- (BOOL) isVoiced : (float*) frameData
-//      frameLength :(int) frameLength {
-//    
-//     // Using Autocorrelation method First
-//    float* autoResults = [self autoCorrelation:frameData seqLength:frameLength corrLength:frameLength];
-//    float autoCorr = autoResults[0];
-//    BOOL goingUp = false;
-//    for (int i = 1; i < frameLength; i++) {
-//        if ( !goingUp && autoResults[i-1] < autoResults[i]) {
-//            goingUp = true;
-//        }
-//        else if ( goingUp && autoResults[i-1] > autoResults[i]) {
-//            goingUp = false;
-//            if (autoResults[i-1] / autoCorr > CorrToAutocorrThreshold) {
-//                //TODO: input2.wav (22.5ms) frameNumber 6 has small gain but high corrToAutocorrRate. How to diff?
-//                //NSLog(@"autoCorr %f", autoCorr);
-//                //NSLog(@"autoResults %d: %f", i-1, autoResults[i-1]);
-//                return true;
-//            }
-//        }
-//    }
-//    
-//    /*
-//     // Method 1: Using only zero-crossing first
-//     float zeroCrossCount = 0.0;
-//     BOOL largerThanZero = true;
-//     for (int i = 0; i < frameLength; i++) {
-//     if (largerThanZero && frameData[i] < 0) {
-//     zeroCrossCount += 1;
-//     largerThanZero = false;
-//     } else if (!largerThanZero && frameData[i] > 0) {
-//     zeroCrossCount += 1;
-//     largerThanZero = true;
-//     }
-//     }
-//     if ((zeroCrossCount / frameLength) > ZeroCrossRate)
-//     return true;
-//     else
-//     return false;
-//     */
-//    
-//    return false;
-//}
 
 - (void) encoderTop {
     // Initial EncodedData Object to store all the results
     self.encodedData = [[EncodedData alloc] init];
     
-    // TODO non-completion intLength specify how many 32 bit integer to store all 54 encoded bits
-    //UInt32 intLength = floor(BitsPerFrame / 32) + 1;
-    //float * encodeFrameBitStream = (float*) malloc(sizeof(float)*intLength);
-    
-    
-    // in http://www.seas.ucla.edu/spapl/projects/ee214aW2002/1/report.html
-    // fr: Frame time increment <==> movePointsPerFrame
-    // fs: Frame size in ms <==> mPointsPerFrame
     int mPointsPerFrame = frameDuration * SampleRate;
-    // Including overlapping between frames
+    // Including overlapping between frames (LPC 10 has no overlap, so the overlapRate = 0)
     int overlapPerFrame = mPointsPerFrame * overlapRate;
     //int overlapPerFrame = 0;
     int movePointsPerFrame = mPointsPerFrame - overlapPerFrame;
@@ -240,41 +150,10 @@
     for (int i = 0; i < mFrame; i++) {
         float* waveFrame = self.data + movePointsPerFrame * i;
         currentFrameLength = MIN(mPointsPerFrame, remainingPoints);
-        //self.encodedData.isvoice[i] = [self isVoiced:waveFrame frameLength:currentFrameLength];
-        //self.encodedData.pitchPeriod[i] = [self pitchPeriodEstimate:waveFrame frameLength:currentFrameLength];
         self.encodedData.coefficient[i] = [self coefficientEstimate:waveFrame frameLength:currentFrameLength frameNumber:i];
-        //self.encodedData.gain[i] = [self gainEstimate:waveFrame frameLength:currentFrameLength frameNumer:i];
         remainingPoints -= movePointsPerFrame;
-//        if (!self.encodedData.isvoice[i])
-//            NSLog(@"Unvoiced Frame %d, gain: %f", i, self.encodedData.gain[i]);
-//        else
-//            NSLog(@"Voiced Frame %d, pitchPeriod %d, gain: %f, parcoCoefficient %f", i, self.encodedData.pitchPeriod[i], self.encodedData.gain[i], self.encodedData.parcoCoefficient[i][3]);
     }
-    
-    // TODO test pitchPeriodEstimate
-    //[self testAutoCorrelation];
-    //[self testPitchEstimation];
-    
-    // TODO Forming the bitstream frame
-    //return encodeFrameBitStream;
+
 }
-
-#pragma mark - TestFunctionImplementation
-
-//- (void) testAutoCorrelation {
-//    float * testSequence = (float*) malloc(sizeof(float)*10);
-//    for (int i = 0; i < 10; i++)
-//        testSequence[i] = i;
-//    float * result;
-//    result = [self autoCorrelation:testSequence seqLength:10 corrLength:10];
-//    for (int i = 0; i < 10; i++)
-//        NSLog(@"auto %f", result[i]);
-//}
-//
-//- (void) testPitchEstimation {
-//    float dataFrame[13] = {1, 0.85, 0.1, -1, -0.5, 0.4, 0.6, 0.5, 0.3, 0.2, 0.7, 0.9, 0.4};
-//    [self pitchPeriodEstimate:dataFrame frameLength:13];
-//    //NSLog(@"pitchPeriod: %f", pitchPeriod);
-//}
 
 @end
